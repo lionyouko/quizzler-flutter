@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quizzler/question.dart';
 
 void main() => runApp(Quizzler());
 
@@ -7,7 +8,7 @@ class Quizzler extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: Colors.grey.shade900,
+        backgroundColor: Color.fromARGB(255, 42, 54, 61),
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 10.0),
@@ -25,6 +26,66 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
+  List<Icon> _scoreList = [];
+
+  Map<bool, Icon> _rightOrWrongStringToIcon = {
+    true: Icon(
+      Icons.check,
+      color: Colors.green,
+    ),
+    false: Icon(
+      Icons.close,
+      color: Colors.red,
+    ),
+  };
+  List<Map<String, bool>> _questionsAndAnswers = [
+    {'You can lead a cow down stairs but not up stairs.': false},
+    {'Approximately one quarter of human bones are in the feet.': true},
+    {'A slug\'s blood is green.': true},
+  ];
+
+  List<Question> _questionList = [
+    Question('You can lead a cow down stairs but not up stairs.', false),
+    Question('Approximately one quarter of human bones are in the feet.', true),
+    Question('A slug\'s blood is green.', true)
+  ];
+
+  int _questionNumber = 0;
+
+  late String questionText = _questionList[0].getText();
+
+  void _progressInTheQuiz() {
+    // When counting up, questionNumber will go for the last one in the list, that corresponds to .length - 1,  and the will show after setting, so it will appear in UI.
+    // Next round it will check that it is in the limit, then it will go back to zero.
+    // In normal loop it does not happen like this
+    if (_questionNumber == (_questionList.length - 1)) {
+      _questionNumber = 0;
+    } else {
+      _questionNumber++;
+    }
+
+    questionText = changeQuestionTextToNext();
+  }
+
+  bool _checkTheAnswers(bool answerGiven) {
+    // print('$answerGiven and $_questionNumber');
+    return answerGiven == _questionList[_questionNumber].getAnswer();
+  }
+
+  void _addNewScoreValueToScoreKeeper(bool answerGiven) {
+    _scoreList.add(_rightOrWrongStringToIcon[answerGiven]!);
+  }
+
+  String changeQuestionTextToNext() {
+    return _questionList[_questionNumber].getText();
+  }
+
+  void _answer(bool answerGiven) {
+    bool answeredCorrectly = _checkTheAnswers(answerGiven);
+    _addNewScoreValueToScoreKeeper(answeredCorrectly);
+    _progressInTheQuiz();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -37,7 +98,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                'This is where the question text will go.',
+                questionText,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -50,9 +111,10 @@ class _QuizPageState extends State<QuizPage> {
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(15.0),
-            child: FlatButton(
-              textColor: Colors.white,
-              color: Colors.green,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Color.fromARGB(255, 47, 178, 56),
+              ),
               child: Text(
                 'True',
                 style: TextStyle(
@@ -61,7 +123,9 @@ class _QuizPageState extends State<QuizPage> {
                 ),
               ),
               onPressed: () {
-                //The user picked true.
+                bool answerGiven = true;
+                _answer(answerGiven);
+                setState(() {});
               },
             ),
           ),
@@ -69,8 +133,10 @@ class _QuizPageState extends State<QuizPage> {
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(15.0),
-            child: FlatButton(
-              color: Colors.red,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Color.fromARGB(255, 231, 42, 42),
+              ),
               child: Text(
                 'False',
                 style: TextStyle(
@@ -79,12 +145,17 @@ class _QuizPageState extends State<QuizPage> {
                 ),
               ),
               onPressed: () {
-                //The user picked false.
+                bool answerGiven = false;
+                _answer(answerGiven);
+                setState(() {});
               },
             ),
           ),
         ),
         //TODO: Add a Row here as your score keeper
+        Row(
+          children: _scoreList,
+        ),
       ],
     );
   }
