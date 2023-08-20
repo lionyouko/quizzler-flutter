@@ -42,26 +42,26 @@ class _QuizPageState extends State<QuizPage> {
 
   QuizBrain quizBrain = QuizBrain();
 
-  int _questionNumber = 0;
+  late String questionText = quizBrain.getQuestionText();
 
-  late String questionText = quizBrain.getQuestionText(0);
+  void resetScoreList() {
+    _scoreList = [];
+  }
 
   void _progressInTheQuiz() {
-    // When counting up, questionNumber will go for the last one in the list, that corresponds to .length - 1,  and the will show after setting, so it will appear in UI.
-    // Next round it will check that it is in the limit, then it will go back to zero.
-    // In normal loop it does not happen like this
-    if (_questionNumber == (quizBrain.getQuizSize() - 1)) {
-      _questionNumber = 0;
+    if (quizBrain.hasNextQuestion()) {
+      quizBrain.nextQuestion();
+      questionText = changeQuestionTextToNext();
     } else {
-      _questionNumber++;
+      showAlertEndGame();
     }
-
-    questionText = changeQuestionTextToNext();
   }
 
   bool _checkTheAnswers(bool answerGiven) {
     // print('$answerGiven and $_questionNumber');
-    return answerGiven == quizBrain.getQuestionAnswer(_questionNumber);
+    bool result = answerGiven == quizBrain.getQuestionAnswer();
+    if (result) quizBrain.addPointToScore();
+    return result;
   }
 
   void _addNewScoreValueToScoreKeeper(bool answerGiven) {
@@ -69,13 +69,54 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   String changeQuestionTextToNext() {
-    return quizBrain.getQuestionText(_questionNumber);
+    return quizBrain.getQuestionText();
   }
 
   void _answer(bool answerGiven) {
     bool answeredCorrectly = _checkTheAnswers(answerGiven);
     _addNewScoreValueToScoreKeeper(answeredCorrectly);
-    _progressInTheQuiz();
+  }
+
+  void resetGame() {
+    resetScoreList();
+    quizBrain.resetQuiz();
+  }
+
+  void showAlertEndGame() {
+    showDialog<String>(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('End of The Game!'),
+        content: Text(
+            'You finished the game with score ${quizBrain.getFinalScore()}'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, "false");
+              resetGame();
+              setState(() {});
+            },
+            child: const Text(
+              'Finish Game',
+              selectionColor: Colors.red,
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, "true");
+              resetGame();
+              // setting state here is bad?
+              setState(() {});
+            },
+            child: const Text(
+              'Start Over',
+              selectionColor: Colors.green,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -117,6 +158,7 @@ class _QuizPageState extends State<QuizPage> {
               onPressed: () {
                 bool answerGiven = true;
                 _answer(answerGiven);
+                _progressInTheQuiz();
                 setState(() {});
               },
             ),
@@ -139,6 +181,7 @@ class _QuizPageState extends State<QuizPage> {
               onPressed: () {
                 bool answerGiven = false;
                 _answer(answerGiven);
+                _progressInTheQuiz();
                 setState(() {});
               },
             ),

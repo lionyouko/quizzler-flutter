@@ -1,6 +1,9 @@
 import 'package:quizzler/question.dart';
 
 class QuizBrain {
+  int _questionNumber = 0;
+  int _finalScore = 0;
+
   List<Question> _questionList = [
     Question('Some cats are actually allergic to humans', true),
     Question('You can lead a cow down stairs but not up stairs.', false),
@@ -29,15 +32,45 @@ class QuizBrain {
         true),
   ];
 
-  String getQuestionText(int questionNumber) {
-    return this._questionList[questionNumber].getText();
+  String getQuestionText() {
+    return this._questionList[_questionNumber].getText();
   }
 
-  bool getQuestionAnswer(int questionNumber) {
-    return this._questionList[questionNumber].getAnswer();
+  bool getQuestionAnswer() {
+    return this._questionList[_questionNumber].getAnswer();
   }
 
   int getQuizSize() {
     return this._questionList.length;
+  }
+
+  void nextQuestion() {
+    if (_questionNumber < _questionList.length - 1) _questionNumber++;
+  }
+
+  //I know this is incorrect, the quizbrain should take care of the total score too
+  void addPointToScore() {
+    this._finalScore += 1;
+  }
+
+  int getFinalScore() {
+    return this._finalScore;
+  }
+
+  void _resetScore() {
+    this._finalScore = 0;
+  }
+
+  void _resetProgress() {
+    this._questionNumber = 0;
+  }
+
+  void resetQuiz() {
+    _resetScore();
+    _resetProgress();
+  }
+
+  bool hasNextQuestion() {
+    return _questionNumber < (_questionList.length - 1) ? true : false;
   }
 }
