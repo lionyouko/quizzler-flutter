@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:quizzler/question.dart';
+
+import 'package:quizzler/quiz_brain.dart';
 
 void main() => runApp(Quizzler());
 
@@ -38,27 +39,18 @@ class _QuizPageState extends State<QuizPage> {
       color: Colors.red,
     ),
   };
-  List<Map<String, bool>> _questionsAndAnswers = [
-    {'You can lead a cow down stairs but not up stairs.': false},
-    {'Approximately one quarter of human bones are in the feet.': true},
-    {'A slug\'s blood is green.': true},
-  ];
 
-  List<Question> _questionList = [
-    Question('You can lead a cow down stairs but not up stairs.', false),
-    Question('Approximately one quarter of human bones are in the feet.', true),
-    Question('A slug\'s blood is green.', true)
-  ];
+  QuizBrain quizBrain = QuizBrain();
 
   int _questionNumber = 0;
 
-  late String questionText = _questionList[0].getText();
+  late String questionText = quizBrain.getQuestionText(0);
 
   void _progressInTheQuiz() {
     // When counting up, questionNumber will go for the last one in the list, that corresponds to .length - 1,  and the will show after setting, so it will appear in UI.
     // Next round it will check that it is in the limit, then it will go back to zero.
     // In normal loop it does not happen like this
-    if (_questionNumber == (_questionList.length - 1)) {
+    if (_questionNumber == (quizBrain.getQuizSize() - 1)) {
       _questionNumber = 0;
     } else {
       _questionNumber++;
@@ -69,7 +61,7 @@ class _QuizPageState extends State<QuizPage> {
 
   bool _checkTheAnswers(bool answerGiven) {
     // print('$answerGiven and $_questionNumber');
-    return answerGiven == _questionList[_questionNumber].getAnswer();
+    return answerGiven == quizBrain.getQuestionAnswer(_questionNumber);
   }
 
   void _addNewScoreValueToScoreKeeper(bool answerGiven) {
@@ -77,7 +69,7 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   String changeQuestionTextToNext() {
-    return _questionList[_questionNumber].getText();
+    return quizBrain.getQuestionText(_questionNumber);
   }
 
   void _answer(bool answerGiven) {
